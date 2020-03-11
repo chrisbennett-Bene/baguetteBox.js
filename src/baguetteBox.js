@@ -572,7 +572,6 @@
         }
 		if (index+1 == currentGallery.length) {
             slider.classList.add('galleryend');
-			previousButton.focus();
 		}
 		
         imageContainer.appendChild(figure);

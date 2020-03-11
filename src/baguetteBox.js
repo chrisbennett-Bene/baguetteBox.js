@@ -20,19 +20,17 @@
     'use strict';
 
     // SVG shapes used on the buttons
-    var leftArrow = '<svg width="44" height="60">' +
-            '<polyline points="30 10 10 30 30 50" stroke="rgba(255,255,255,0.5)" stroke-width="4"' +
-              'stroke-linecap="butt" fill="none" stroke-linejoin="round"/>' +
-            '</svg>',
-        rightArrow = '<svg width="44" height="60">' +
-            '<polyline points="14 10 34 30 14 50" stroke="rgba(255,255,255,0.5)" stroke-width="4"' +
-              'stroke-linecap="butt" fill="none" stroke-linejoin="round"/>' +
-            '</svg>',
-        closeX = '<svg width="30" height="30">' +
-            '<g stroke="rgb(160,160,160)" stroke-width="4">' +
-            '<line x1="5" y1="5" x2="25" y2="25"/>' +
-            '<line x1="5" y1="25" x2="25" y2="5"/>' +
-            '</g></svg>';
+     var leftArrow = '<svg viewbox="-8 0 60 60">' +
+		                '<polyline points="30 10 10 30 30 50" stroke="#FFF" stroke-width="4" stroke-linecap="butt" fill="none" stroke-linejoin="round"/>' +
+		                '</svg>',
+       rightArrow = '<svg viewbox="-8 0 60 60">' +
+				            '<polyline points="14 10 34 30 14 50" stroke="#FFF" stroke-width="4" stroke-linecap="butt" fill="none" stroke-linejoin="round"/>' +
+				            '</svg>',
+           closeX = '<svg viewbox="0 0 60 60">' +
+				            '<g stroke="#FFF" stroke-width="4">' +
+				            '<line x1="15" y1="15" x2="45" y2="45"/>' +
+				            '<line x1="15" y1="45" x2="45" y2="15"/>' +
+				            '</g></svg>';
     // Global options and their defaults
     var options = {},
         defaults = {

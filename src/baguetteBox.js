@@ -586,7 +586,7 @@
             });
             // Get real screen resolution
             var width = window.innerWidth * window.devicePixelRatio;
-			var height = window.innerHeight * window.devicePixelRatio;
+			var height = window.innerHeight * window.devicePixelRatio + 150;
             // Find the first image bigger than or equal to the current height
             var i = 0;
             while (i < keys.length - 1 && keys[i] < height && keys[i] < width) {

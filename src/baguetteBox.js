@@ -104,7 +104,7 @@
         if (touchFlag || touch.multitouch) {
             return;
         }
-        event.preventDefault ? event.preventDefault() : event.returnValue = false; // eslint-disable-line no-unused-expressions
+        event.preventDefault;
         var touchEvent = event.touches[0] || event.changedTouches[0];
         // Move at least 40 pixels to trigger the action
         if (touchEvent.pageX - touch.startX > 40) {

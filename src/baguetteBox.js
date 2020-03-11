@@ -49,8 +49,6 @@
             onChange: null,
             overlayBackgroundColor: 'rgba(0,0,0,.8)'
         };
-    // Object containing information about features compatibility
-    var supports = {};
     // DOM Elements references
     var overlay, slider, previousButton, nextButton, closeButton;
     // An array with all images in the current gallery
@@ -103,7 +101,6 @@
         if (touchFlag || touch.multitouch) {
             return;
         }
-        event.preventDefault;
         var touchEvent = event.touches[0] || event.changedTouches[0];
         // Move at least 40 pixels to trigger the action
         if (touchEvent.pageX - touch.startX > 40) {
@@ -135,37 +132,8 @@
         }
     };
 
-    // forEach polyfill for IE8
-    // http://stackoverflow.com/a/14827443/1077846
-    /* eslint-disable */
-    if (![].forEach) {
-        Array.prototype.forEach = function(callback, thisArg) {
-            for (var i = 0; i < this.length; i++) {
-                callback.call(thisArg, this[i], i, this);
-            }
-        };
-    }
-
-    // filter polyfill for IE8
-    // https://gist.github.com/eliperelman/1031656
-    if (![].filter) {
-        Array.prototype.filter = function(a, b, c, d, e) {
-            c = this;
-            d = [];
-            for (e = 0; e < c.length; e++)
-                a.call(b, c[e], e, c) && d.push(c[e]);
-            return d;
-        };
-    }
-    /* eslint-enable */
-
     // Script entry point
     function run(selector, userOptions) {
-        // Fill supports object
-        supports.transforms = testTransformsSupport();
-        supports.svg = testSvgSupport();
-        supports.passiveEvents = testPassiveEventsSupport();
-
         buildOverlay();
         removeFromCache(selector);
         return bindImageClickListeners(selector, userOptions);
@@ -206,7 +174,7 @@
             var gallery = [];
             [].forEach.call(tagsNodeList, function(imageElement, imageIndex) {
                 var imageElementClickHandler = function(event) {
-                    event.preventDefault ? event.preventDefault() : event.returnValue = false; // eslint-disable-line no-unused-expressions
+                    event.preventDefault();
                     prepareOverlay(gallery, userOptions);
                     showOverlay(imageIndex);
                 };
@@ -273,21 +241,21 @@
         previousButton.setAttribute('type', 'button');
         previousButton.id = 'previous-button';
         previousButton.setAttribute('aria-label', 'Previous');
-        previousButton.innerHTML = supports.svg ? leftArrow : '&lt;';
+        previousButton.innerHTML = leftArrow;
         overlay.appendChild(previousButton);
 
         nextButton = create('button');
         nextButton.setAttribute('type', 'button');
         nextButton.id = 'next-button';
         nextButton.setAttribute('aria-label', 'Next');
-        nextButton.innerHTML = supports.svg ? rightArrow : '&gt;';
+        nextButton.innerHTML = rightArrow;
         overlay.appendChild(nextButton);
 
         closeButton = create('button');
         closeButton.setAttribute('type', 'button');
         closeButton.id = 'close-button';
         closeButton.setAttribute('aria-label', 'Close');
-        closeButton.innerHTML = supports.svg ? closeX : '&times;';
+        closeButton.innerHTML = closeX;
         overlay.appendChild(closeButton);
 
         previousButton.className = nextButton.className = closeButton.className = 'baguetteBox-button';
@@ -332,7 +300,7 @@
     }
 
     function bindEvents() {
-        var options = supports.passiveEvents ? { passive: true } : null;
+        var options = { passive: true };
         bind(overlay, 'click', overlayClickHandler);
         bind(previousButton, 'click', previousButtonClickHandler);
         bind(nextButton, 'click', nextButtonClickHandler);
@@ -345,7 +313,7 @@
     }
 
     function unbindEvents() {
-        var options = supports.passiveEvents ? { passive: true } : null;
+        var options = { passive: true };
         unbind(overlay, 'click', overlayClickHandler);
         unbind(previousButton, 'click', previousButtonClickHandler);
         unbind(nextButton, 'click', nextButtonClickHandler);
@@ -400,9 +368,8 @@
             }
         }
         /* Apply new options */
-        // Change transition for proper animation
-        slider.style.transition = slider.style.webkitTransition = (options.animation === 'fadeIn' ? 'opacity .4s ease' :
-            options.animation === 'slideIn' ? '' : 'none');
+        // Set opacity if fade in, otherwise rely on CSS
+        slider.style.transition = (options.animation === 'fadeIn' ? 'opacity .4s ease' : '');
         // Hide buttons if necessary
         if (options.buttons === 'auto' && ('ontouchstart' in window || currentGallery.length === 1)) {
             options.buttons = false;
@@ -737,47 +704,11 @@
         if (options.animation === 'fadeIn') {
             slider.style.opacity = 0;
             setTimeout(function() {
-                supports.transforms ?
-                    slider.style.transform = slider.style.webkitTransform = 'translate3d(' + offset + ',0,0)'
-                    : slider.style.left = offset;
                 slider.style.opacity = 1;
             }, 400);
-        } else {
-            supports.transforms ?
-                slider.style.transform = slider.style.webkitTransform = 'translate3d(' + offset + ',0,0)'
-                : slider.style.left = offset;
-        }
+        } 
+		slider.style.left = offset;
     }
-
-    // CSS 3D Transforms test
-    function testTransformsSupport() {
-        var div = create('div');
-        return typeof div.style.perspective !== 'undefined' || typeof div.style.webkitPerspective !== 'undefined';
-    }
-
-    // Inline SVG test
-    function testSvgSupport() {
-        var div = create('div');
-        div.innerHTML = '<svg/>';
-        return (div.firstChild && div.firstChild.namespaceURI) === 'http://www.w3.org/2000/svg';
-    }
-
-    // Borrowed from https://github.com/seiyria/bootstrap-slider/pull/680/files
-    /* eslint-disable getter-return */
-    function testPassiveEventsSupport() {
-        var passiveEvents = false;
-        try {
-            var opts = Object.defineProperty({}, 'passive', {
-                get: function() {
-                    passiveEvents = true;
-                }
-            });
-            window.addEventListener('test', null, opts);
-        } catch (e) { /* Silence the error and continue */ }
-
-        return passiveEvents;
-    }
-    /* eslint-enable getter-return */
 
     function preloadNext(index) {
         if (index - currentIndex >= options.preload) {
@@ -803,26 +734,11 @@
     }
 
     function bind(element, event, callback, options) {
-        if (element.addEventListener) {
-            element.addEventListener(event, callback, options);
-        } else {
-            // IE8 fallback
-            element.attachEvent('on' + event, function(event) {
-                // `event` and `event.target` are not provided in IE8
-                event = event || window.event;
-                event.target = event.target || event.srcElement;
-                callback(event);
-            });
-        }
+        element.addEventListener(event, callback, options);
     }
 
     function unbind(element, event, callback, options) {
-        if (element.removeEventListener) {
-            element.removeEventListener(event, callback, options);
-        } else {
-            // IE8 fallback
-            element.detachEvent('on' + event, callback);
-        }
+        element.removeEventListener(event, callback, options);
     }
 
     function getByID(id) {

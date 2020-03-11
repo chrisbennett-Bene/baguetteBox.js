@@ -84,7 +84,7 @@
   height: 100%;
   width: 100%;
   white-space: nowrap;
-  transition:left 350ms ease, transform 350ms ease; }
+  transition:left 350ms ease, transform 350ms ease, opacity 350ms ease; }
   #baguetteBox-slider.bounce-from-right {
     -webkit-animation: bounceFromRight .4s ease-out;
             animation: bounceFromRight .4s ease-out; }

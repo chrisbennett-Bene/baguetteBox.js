@@ -311,6 +311,12 @@
         case 35: // End
             showLastImage(event);
             break;
+		case 38: // Up Arrow
+             closeButton.focus();
+             break;
+       	case 40: // Down Arrow
+             nextButton.focus();
+             break;
         }
     }
 
@@ -584,9 +590,10 @@
             });
             // Get real screen resolution
             var width = window.innerWidth * window.devicePixelRatio;
-            // Find the first image bigger than or equal to the current width
+			var height = window.innerHeight * window.devicePixelRatio;
+            // Find the first image bigger than or equal to the current height
             var i = 0;
-            while (i < keys.length - 1 && keys[i] < width) {
+            while (i < keys.length - 1 && keys[i] < height && keys[i] < width) {
                 i++;
             }
             result = srcs[keys[i]] || result;

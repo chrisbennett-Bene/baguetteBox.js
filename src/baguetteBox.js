@@ -41,6 +41,7 @@
             bodyClass: 'baguetteBox-open',
             titleTag: false,
             async: false,
+			counter: true,
             preload: 2,
             animation: 'slideIn',
             afterShow: null,
@@ -293,7 +294,17 @@
 
         bindEvents();
     }
-
+	// reset function to remove added styles/aria-labels
+	function buttonReset() {
+		nextButton.removeAttribute("disabled");
+        nextButton.setAttribute("aria-label", "Next");
+        previousButton.removeAttribute("disabled");
+        previousButton.setAttribute("aria-label", "Previous");
+    }
+    function sliderReset() {
+        slider.classList.remove("gallerystart","galleryend");
+	}
+	
     function keyDownHandler(event) {
         switch (event.keyCode) {
         case 37: // Left arrow
@@ -428,6 +439,7 @@
         });
 
         updateOffset();
+		buttonReset();
         overlay.style.display = 'block';
         if (options.fullScreen) {
             enterFullScreen();
@@ -452,7 +464,7 @@
 
     function initFocus() {
         if (options.buttons) {
-            previousButton.focus();
+            nextButton.focus();
         } else {
             closeButton.focus();
         }
@@ -479,6 +491,7 @@
     }
 
     function hideOverlay() {
+		sliderReset();
         if (options.noScrollbars) {
             document.documentElement.style.overflowY = 'auto';
             document.body.style.overflowY = 'auto';
@@ -546,6 +559,22 @@
             figcaption.innerHTML = imageCaption;
             figure.appendChild(figcaption);
         }
+		// Insert counter if required
+		if (options.counter) {
+            var figcounter = create('div');
+            figcounter.className = 'figcounter';	
+            figcounter.innerHTML = index+1 + ' of ' + currentGallery.length;
+            figure.appendChild(figcounter);
+        }
+		// Add class to slider if first or last image opens the gallery for the first time. 
+        if (index === 0) {
+            slider.classList.add('gallerystart');
+        }
+		if (index+1 == currentGallery.length) {
+            slider.classList.add('galleryend');
+			previousButton.focus();
+		}
+		
         imageContainer.appendChild(figure);
 
         // Prepare gallery img element
@@ -555,7 +584,7 @@
             var spinner = document.querySelector('#baguette-img-' + index + ' .baguetteBox-spinner');
             figure.removeChild(spinner);
             if (!options.async && callback) {
-                callback();
+               callback();
             }
         };
         image.setAttribute('src', imageSrc);
@@ -563,6 +592,7 @@
         if (options.titleTag && imageCaption) {
             image.title = imageCaption;
         }
+		
         figure.appendChild(image);
 
         // Run callback
@@ -603,11 +633,30 @@
 
     // Return false at the right end of the gallery
     function showNextImage() {
+		if (nextButton.getAttribute("aria-label") != "Gallery End") { // if it isn't already the end of the gallery
+            buttonReset(); // reset previously disabled buttons in the other direction
+		    sliderReset(); // remove classes
+            nextButton.focus(); // shift visual focus for keyboard use etc
+            nextButton.classList.toggle("active"); // apply active class and remove after short time
+            setTimeout(function() {
+                nextButton.classList.toggle("active");
+            }, 250);	
+        } else {}
         return show(currentIndex + 1);
+		
     }
 
     // Return false at the left end of the gallery
     function showPreviousImage() {
+        if (previousButton.getAttribute("aria-label") != "Gallery Start") { // if  isn't already the start of the gallery
+            buttonReset(); // reset previously disabled buttons in the other direction
+		    sliderReset(); // remove classes
+            previousButton.focus(); // shift visual focus for keyboard use etc
+            previousButton.classList.toggle("active"); // apply active class and remove after short time
+            setTimeout(function() {
+                previousButton.classList.toggle("active");
+            }, 250);
+		}
         return show(currentIndex - 1);
     }
 
@@ -642,12 +691,19 @@
         if (index < 0) {
             if (options.animation) {
                 bounceAnimation('left');
+
+                previousButton.setAttribute("aria-label", "Gallery Start"); // Sets aria-label
+                previousButton.setAttribute("disabled",""); // Disables button
+                nextButton.focus(); // shifts focus to Next
             }
             return false;
         }
         if (index >= imagesElements.length) {
             if (options.animation) {
                 bounceAnimation('right');
+                nextButton.setAttribute("aria-label", "Gallery End"); // Sets aria-label
+                closeButton.focus(); // shifts focus to Close
+				nextButton.setAttribute("disabled",""); // Disables button
             }
             return false;
         }
@@ -728,8 +784,13 @@
         if (index - currentIndex >= options.preload) {
             return;
         }
+		
         loadImage(index + 1, function() {
-            preloadNext(index + 1);
+		// reset slider here to allow callback() without splattering .gallertstart and .galleryend classes on (preload + 1) images from start and end
+        if (index > 1) {
+            sliderReset();
+        }
+			preloadNext(index + 1);
         });
     }
 

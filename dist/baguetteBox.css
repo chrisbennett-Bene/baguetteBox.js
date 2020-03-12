@@ -84,7 +84,8 @@
   height: 100%;
   width: 100%;
   white-space: nowrap;
-  transition:left 350ms ease, transform 350ms ease, opacity 350ms ease; }
+  transition:left 350ms ease 20ms;}
+ 
   #baguetteBox-slider.bounce-from-right {
     -webkit-animation: bounceFromRight .4s ease-out;
             animation: bounceFromRight .4s ease-out; }
@@ -144,14 +145,14 @@
 .baguetteBox-button:hover,.baguetteBox-button:active,.baguetteBox-button:focus {
 	outline:none;
 	opacity:1;
-	transform:scale(1.66); }	
-	
+	transform:scale(1.5); }	
+
 #previous-button{left:4.25%;}
 #next-button, #close-button, .figcounter {right:4.25%;}
 #close-button {top:calc(15vh - 1.5vw);}
   
 @media (orientation: portrait) {
-.baguetteBox-button:hover,.baguetteBox-button:active,.baguetteBox-button:focus{transform:scale(1.3);}	
+.baguetteBox-button:hover,.baguetteBox-button:active,.baguetteBox-button:focus{transform:scale(1.25);}	
 .baguetteBox-button{top:13vh;}
 #baguetteBox-overlay .figcounter {
   right:33%;
@@ -162,7 +163,10 @@
   width: auto;
   border-radius: calc(.85rem + 5vw);}
 #close-button {top:2vh;}
+#baguetteBox-slider.opacity {
+  transition:left 750ms ease;}
 }
+
 .baguetteBox-button:focus {outline:none;box-shadow:0 0 1vw rgba(255,255,255,.5);}
 .baguetteBox-button:not([disabled]):active,
 .baguetteBox-button:not([disabled]).active, 
@@ -200,8 +204,7 @@
 .baguetteBox-double-bounce2 {
   width: 100%;
   height: 100%;
-  -moz-border-radius: 50%;
-       border-radius: 50%;
+  border-radius: 50%;
   background-color: #fff;
   opacity: .6;
   position: absolute;

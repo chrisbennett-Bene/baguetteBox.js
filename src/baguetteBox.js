@@ -35,19 +35,18 @@
     var options = {},
         defaults = {
             captions: true,
-            buttons: 'auto',
+            buttons: true,
+			counter: true,
             fullScreen: false,
-            noScrollbars: false,
-            bodyClass: 'baguetteBox-open',
+            noScrollbars: true,
+            bodyClass: null,
             titleTag: false,
             async: false,
-			counter: true,
             preload: 2,
-            animation: 'slideIn',
+            animation: null,
             afterShow: null,
             afterHide: null,
-            onChange: null,
-            overlayBackgroundColor: 'rgba(0,0,0,.8)'
+            onChange: null
         };
     // DOM Elements references
     var overlay, slider, previousButton, nextButton, closeButton;
@@ -76,15 +75,15 @@
         }
     };
     var previousButtonClickHandler = function(event) {
-        event.stopPropagation ? event.stopPropagation() : event.cancelBubble = true; // eslint-disable-line no-unused-expressions
+        event.stopPropagation();
         showPreviousImage();
     };
     var nextButtonClickHandler = function(event) {
-        event.stopPropagation ? event.stopPropagation() : event.cancelBubble = true; // eslint-disable-line no-unused-expressions
+        event.stopPropagation();
         showNextImage();
     };
     var closeButtonClickHandler = function(event) {
-        event.stopPropagation ? event.stopPropagation() : event.cancelBubble = true; // eslint-disable-line no-unused-expressions
+        event.stopPropagation();
         hideOverlay();
     };
     var touchstartHandler = function(event) {
@@ -368,20 +367,17 @@
             }
         }
         /* Apply new options */
-        // Set opacity if fade in, otherwise rely on CSS
-        slider.style.transition = (options.animation === 'fadeIn' ? 'opacity .4s ease' : '');
-        // Hide buttons if necessary
+        
+		
+		// Add class to slider if fadeIn set, to tweak fade on mobile where it looks ordinary
+		options.animation === 'fadeIn' ? slider.classList.add('opacity'): '';
+        
+		// Hide buttons if necessary
         if (options.buttons === 'auto' && ('ontouchstart' in window || currentGallery.length === 1)) {
             options.buttons = false;
         }
         // Set buttons style to hide or display them
         previousButton.style.display = nextButton.style.display = (options.buttons ? '' : 'none');
-        // Set overlay color
-        try {
-            overlay.style.backgroundColor = options.overlayBackgroundColor;
-        } catch (e) {
-            // Silence the error and continue
-        }
     }
 
     function showOverlay(chosenImageIndex) {
@@ -607,7 +603,7 @@
             setTimeout(function() {
                 nextButton.classList.toggle("active");
             }, 250);	
-        } else {}
+        }
         return show(currentIndex + 1);
 		
     }
@@ -637,7 +633,7 @@
     // Return false at the right end of the gallery
     function showLastImage(event) {
         if (event) {
-            event.preventDefault();
+			event.preventDefault();
         }
         return show(currentGallery.length - 1);
     }
@@ -655,22 +651,19 @@
             return true;
         }
         if (index < 0) {
-            if (options.animation) {
-                bounceAnimation('left');
+            bounceAnimation('left');
+            previousButton.setAttribute("aria-label", "Gallery Start"); // Sets aria-label
+            previousButton.setAttribute("disabled",""); // Disables button
+            nextButton.focus(); // shifts focus to Next
 
-                previousButton.setAttribute("aria-label", "Gallery Start"); // Sets aria-label
-                previousButton.setAttribute("disabled",""); // Disables button
-                nextButton.focus(); // shifts focus to Next
-            }
             return false;
         }
         if (index >= imagesElements.length) {
-            if (options.animation) {
-                bounceAnimation('right');
-                nextButton.setAttribute("aria-label", "Gallery End"); // Sets aria-label
-                closeButton.focus(); // shifts focus to Close
-				nextButton.setAttribute("disabled",""); // Disables button
-            }
+            bounceAnimation('right');
+            nextButton.setAttribute("aria-label", "Gallery End"); // Sets aria-label
+            closeButton.focus(); // shifts focus to Close
+			nextButton.setAttribute("disabled",""); // Disables button
+
             return false;
         }
 
@@ -693,9 +686,9 @@
      * @param {('left'|'right')} direction - Direction of the movement
      */
     function bounceAnimation(direction) {
-        slider.className = 'bounce-from-' + direction;
+        slider.classList.toggle('bounce-from-' + direction);
         setTimeout(function() {
-            slider.className = '';
+            slider.classList.toggle('bounce-from-' + direction);
         }, 400);
     }
 
@@ -716,7 +709,7 @@
         }
 		
         loadImage(index + 1, function() {
-		// reset slider here to allow callback() without splattering .gallertstart and .galleryend classes on (preload + 1) images from start and end
+		// reset slider here to allow callback() without scattering .gallertstart and .galleryend classes on (preload + 1) images from start and end
         if (index > 1) {
             sliderReset();
         }

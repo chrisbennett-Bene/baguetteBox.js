@@ -36,7 +36,7 @@
         defaults = {
             captions: true,
             buttons: true,
-			counter: true,
+            counter: true,
             preload: 2,
             animation: null
         };

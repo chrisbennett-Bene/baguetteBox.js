@@ -24,29 +24,21 @@
 		                '<polyline points="30 10 10 30 30 50" stroke="#FFF" stroke-width="4" stroke-linecap="butt" fill="none" stroke-linejoin="round"/>' +
 		                '</svg>',
        rightArrow = '<svg viewbox="-8 0 60 60">' +
-				            '<polyline points="14 10 34 30 14 50" stroke="#FFF" stroke-width="4" stroke-linecap="butt" fill="none" stroke-linejoin="round"/>' +
-				            '</svg>',
+                        '<polyline points="14 10 34 30 14 50" stroke="#FFF" stroke-width="4" stroke-linecap="butt" fill="none" stroke-linejoin="round"/>' +
+                        '</svg>',
            closeX = '<svg viewbox="0 0 60 60">' +
-				            '<g stroke="#FFF" stroke-width="4">' +
-				            '<line x1="15" y1="15" x2="45" y2="45"/>' +
-				            '<line x1="15" y1="45" x2="45" y2="15"/>' +
-				            '</g></svg>';
+                        '<g stroke="#FFF" stroke-width="4">' +
+                        '<line x1="15" y1="15" x2="45" y2="45"/>' +
+                        '<line x1="15" y1="45" x2="45" y2="15"/>' +
+                        '</g></svg>';
     // Global options and their defaults
     var options = {},
         defaults = {
             captions: true,
             buttons: true,
 			counter: true,
-            fullScreen: false,
-            noScrollbars: true,
-            bodyClass: null,
-            titleTag: false,
-            async: false,
             preload: 2,
-            animation: null,
-            afterShow: null,
-            afterHide: null,
-            onChange: null
+            animation: null
         };
     // DOM Elements references
     var overlay, slider, previousButton, nextButton, closeButton;
@@ -381,10 +373,6 @@
     }
 
     function showOverlay(chosenImageIndex) {
-        if (options.noScrollbars) {
-            document.documentElement.style.overflowY = 'hidden';
-            document.body.style.overflowY = 'scroll';
-        }
         if (overlay.style.display === 'block') {
             return;
         }
@@ -404,22 +392,10 @@
         updateOffset();
 		buttonReset();
         overlay.style.display = 'block';
-        if (options.fullScreen) {
-            enterFullScreen();
-        }
         // Fade in overlay
         setTimeout(function() {
             overlay.className = 'visible';
-            if (options.bodyClass && document.body.classList) {
-                document.body.classList.add(options.bodyClass);
-            }
-            if (options.afterShow) {
-                options.afterShow();
-            }
         }, 50);
-        if (options.onChange) {
-            options.onChange(currentIndex, imagesElements.length);
-        }
         documentLastFocus = document.activeElement;
         initFocus();
         isOverlayVisible = true;
@@ -433,32 +409,8 @@
         }
     }
 
-    function enterFullScreen() {
-        if (overlay.requestFullscreen) {
-            overlay.requestFullscreen();
-        } else if (overlay.webkitRequestFullscreen) {
-            overlay.webkitRequestFullscreen();
-        } else if (overlay.mozRequestFullScreen) {
-            overlay.mozRequestFullScreen();
-        }
-    }
-
-    function exitFullscreen() {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        }
-    }
-
     function hideOverlay() {
 		sliderReset();
-        if (options.noScrollbars) {
-            document.documentElement.style.overflowY = 'auto';
-            document.body.style.overflowY = 'auto';
-        }
         if (overlay.style.display === 'none') {
             return;
         }
@@ -468,15 +420,6 @@
         overlay.className = '';
         setTimeout(function() {
             overlay.style.display = 'none';
-            if (document.fullscreen) {
-                exitFullscreen();
-            }
-            if (options.bodyClass && document.body.classList) {
-                document.body.classList.remove(options.bodyClass);
-            }
-            if (options.afterHide) {
-                options.afterHide();
-            }
             documentLastFocus && documentLastFocus.focus();
             isOverlayVisible = false;
         }, 500);
@@ -545,49 +488,60 @@
             // Remove loader element
             var spinner = document.querySelector('#baguette-img-' + index + ' .baguetteBox-spinner');
             figure.removeChild(spinner);
-            if (!options.async && callback) {
+            if (callback) {
                callback();
             }
         };
         image.setAttribute('src', imageSrc);
         image.alt = thumbnailElement ? thumbnailElement.alt || '' : '';
-        if (options.titleTag && imageCaption) {
-            image.title = imageCaption;
-        }
-		
         figure.appendChild(image);
-
-        // Run callback
-        if (options.async && callback) {
-            callback();
-        }
     }
 
-    // Get image source location, mostly used for responsive images
-    function getImageSrc(image) {
+    // Get image source location
+   function getImageSrc(image) {
         // Set default image path from href
         var result = image.href;
-        // If dataset is supported find the most suitable image
-        if (image.dataset) {
+        
+		// Get device dimensions and assign orientation
+		var width = window.innerWidth * window.devicePixelRatio;
+		var height = window.innerHeight * window.devicePixelRatio;
+		var orientation = height > width ?  "portrait" : "landscape";
+		console.log("width  = " +width);
+		console.log("height = " +height);
+		console.log("orient = " +orientation);
+		
+		// If dataset is supported find the most suitable image
+		if (image.dataset) {
             var srcs = [];
-            // Get all possible image versions depending on the resolution
+            // Get all possible image versions depending on resolution and orientation
             for (var item in image.dataset) {
-                if (item.substring(0, 3) === 'at-' && !isNaN(item.substring(3))) {
-                    srcs[item.replace('at-', '')] = image.dataset[item];
-                }
+				
+                if (orientation === "landscape") {
+					// grab height data attribute
+				    srcs[item.split('~')[1].substring(7)] = image.dataset[item];
+					console.log("variation height: "+ item.split('~')[1].substring(7))
+                } else {
+					// grab width data attribute
+					srcs[item.split('~')[0].substring(6)] = image.dataset[item];
+					console.log("variation width: "+ item.split('~')[0].substring(6))
+				}
             }
-            // Sort resolutions ascending
+			
+			// Sort width resolutions ascending
             var keys = Object.keys(srcs).sort(function(a, b) {
                 return parseInt(a, 10) < parseInt(b, 10) ? -1 : 1;
             });
-            // Get real screen resolution
-            var width = window.innerWidth * window.devicePixelRatio;
-			var height = window.innerHeight * window.devicePixelRatio + 150;
-            // Find the first image bigger than or equal to the current height
+            
             var i = 0;
-            while (i < keys.length - 1 && keys[i] < height && keys[i] < width) {
+			if (orientation === "landscape") {
+                while (i < keys.length - 1 && keys[i] < height) {
                 i++;
-            }
+                }
+			} else {
+                while (i < keys.length - 1 && keys[i] < width) {
+                i++;
+                }
+			}
             result = srcs[keys[i]] || result;
         }
         return result;
@@ -673,10 +627,6 @@
             preloadPrev(currentIndex);
         });
         updateOffset();
-
-        if (options.onChange) {
-            options.onChange(currentIndex, imagesElements.length);
-        }
 
         return true;
     }

@@ -1,8 +1,8 @@
 /*!
- * baguetteBox.js
- * @author  feimosi
- * @version %%INJECT_VERSION%%
- * @url https://github.com/feimosi/baguetteBox.js
+ * baguetteBox.js customised version for bene.net.au
+ * Original @author feimosi
+ * Based on version 1.11.0
+ * Original @url https://github.com/feimosi/baguetteBox.js
  */
 
 /* global define, module */
